@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #07090E;
+    color: #F1F5F9;
+    background-image: 
+      radial-gradient(circle at 15% 0%, rgba(255, 159, 28, 0.06) 0%, transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(0, 214, 125, 0.06) 0%, transparent 45%),
+      linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  }
+
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}

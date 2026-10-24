@@ -1,0 +1,16 @@
+# Projet: TVA Chronomonitor × Latveria Brutalist
+# Stack technologique: Vue 3 (<script setup lang="ts">), TypeScript strict, Vite, Tailwind CSS v4 (@import "tailwindcss"), Pinia, lucide-vue-next
+# Design System: Fond obsidienne (#07090E), panneaux (#0F141C), ambre TVA (#FF9F1C), vert Doom (#00D67D), bordures fines, angles francs, police monospace pour la télémétrie
+
+# Règles de codage:
+# - Toujours écrire un code modulaire, typé sans `any`
+# - Vérifier la compilation TypeScript
+# - Utiliser strict mode TypeScript
+# - Utiliser <script setup lang="ts"> pour tous les composants Vue
+# - Importer Tailwind CSS avec @import "tailwindcss";
+# - Utiliser Pinia pour la gestion d'état
+# - Utiliser lucide-vue-next pour les icônes
+# - Respecter la palette de couleurs du design system
+# - Utiliser une police monospace pour la télémétrie
+# - Les angles francs et les bordures fines sont obligatoires
+# - Toujours vérifier la compilation avec npm run build

@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import type { User } from '@supabase/supabase-js'
 import type { EraId, ProjectType, Locale, ThemeMode } from '../types/mcu'
 import { MCU_TIMELINE } from '../data/mcuTimeline'
 import { TRANSLATIONS } from '../i18n/translations'
+import { supabase } from '../services/supabaseClient'
 
 const STORAGE_KEY = 'doomsday_archive_state_v2'
 const DOOMSDAY_RELEASE = new Date('2026-12-18T00:00:00')
@@ -26,6 +28,14 @@ export const useMcuStore = defineStore('mcu', () => {
   const locale = ref<Locale>('fr')
   const theme = ref<ThemeMode>('dark')
 
+  // État Multi-Utilisateur Supabase
+  const currentUser = ref<User | null>(null)
+  const agentName = ref<string>('')
+  const isSyncing = ref<boolean>(false)
+  const showAuthModal = ref<boolean>(false)
+  let isApplyingRemoteState = false
+  let syncTimeout: ReturnType<typeof setTimeout> | null = null
+
   // Navigation vers la page Wiki dédiée
   const selectedProjectId = ref<string | null>(null)
 
@@ -35,11 +45,9 @@ export const useMcuStore = defineStore('mcu', () => {
   const statusFilter = ref<'ALL' | 'WATCHED' | 'UNWATCHED' | 'CRITICAL'>('ALL')
   const searchQuery = ref<string>('')
 
+  // 1. Chargement initial depuis localStorage (Mode Invité ou Cache local)
   try {
-    // Migration douce depuis la v1 si elle existe
-    const rawV2 = localStorage.getItem(STORAGE_KEY)
-    const rawV1 = localStorage.getItem('doomsday_archive_state_v1')
-    const raw = rawV2 || rawV1
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('doomsday_archive_state_v1')
     if (raw) {
       const parsed: Partial<PersistedState> = JSON.parse(raw)
       if (Array.isArray(parsed.watchedIds)) watchedIds.value = parsed.watchedIds
@@ -54,6 +62,101 @@ export const useMcuStore = defineStore('mcu', () => {
     // ignorer
   }
 
+  // 2. Sauvegarde vers Supabase (avec anti-rebond de 500ms)
+  async function pushStateToCloud() {
+    if (!supabase || !currentUser.value || isApplyingRemoteState) return
+    isSyncing.value = true
+    try {
+      await supabase.from('tva_agent_archives').upsert({
+        user_id: currentUser.value.id,
+        agent_name:
+          agentName.value ||
+          currentUser.value.user_metadata?.agent_name ||
+          currentUser.value.email?.split('@')[0] ||
+          'Agent TVA',
+        watched_ids: watchedIds.value,
+        watched_episodes: watchedEpisodes.value,
+        ratings: ratings.value,
+        notes: notes.value,
+        spoiler_shield: spoilerShield.value,
+        locale: locale.value,
+        theme: theme.value,
+        updated_at: new Date().toISOString()
+      })
+    } catch {
+      // ignorer
+    } finally {
+      isSyncing.value = false
+    }
+  }
+
+  // 3. Chargement du profil depuis Supabase à la connexion
+  async function loadCloudProfile(user: User) {
+    if (!supabase) return
+    isSyncing.value = true
+    try {
+      const { data, error } = await supabase
+        .from('tva_agent_archives')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (error) throw error
+
+      if (data) {
+        // Un dossier existe déjà dans le cloud : on charge les données de cet agent
+        isApplyingRemoteState = true
+        watchedIds.value = Array.isArray(data.watched_ids) ? data.watched_ids : []
+        watchedEpisodes.value = data.watched_episodes || {}
+        ratings.value = data.ratings || {}
+        notes.value = data.notes || {}
+        if (typeof data.spoiler_shield === 'boolean') spoilerShield.value = data.spoiler_shield
+        if (data.locale === 'fr' || data.locale === 'en') locale.value = data.locale
+        if (data.theme === 'dark' || data.theme === 'light') theme.value = data.theme
+        agentName.value =
+          data.agent_name ||
+          user.user_metadata?.agent_name ||
+          user.email?.split('@')[0] ||
+          'Agent TVA'
+        setTimeout(() => {
+          isApplyingRemoteState = false
+        }, 100)
+      } else {
+        // Premier login : on transfère la progression actuelle du mode invité vers son nouveau compte cloud
+        agentName.value =
+          user.user_metadata?.agent_name ||
+          user.email?.split('@')[0] ||
+          'Agent TVA'
+        await pushStateToCloud()
+      }
+    } catch {
+      // ignorer
+    } finally {
+      isSyncing.value = false
+    }
+  }
+
+  // 4. Écouteur de session Supabase au démarrage
+  if (supabase) {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        currentUser.value = data.session.user
+        loadCloudProfile(data.session.user)
+      }
+    })
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      const newUser = session?.user || null
+      const previousUserId = currentUser.value?.id
+      currentUser.value = newUser
+
+      if (newUser && newUser.id !== previousUserId) {
+        loadCloudProfile(newUser)
+      }
+    })
+  }
+
+  // 5. Surveillance des changements (localStorage immédiat + Cloud différé)
   watch(
     [watchedIds, watchedEpisodes, ratings, notes, spoilerShield, locale, theme],
     () => {
@@ -71,9 +174,35 @@ export const useMcuStore = defineStore('mcu', () => {
       } catch {
         // ignorer
       }
+
+      if (currentUser.value && !isApplyingRemoteState) {
+        if (syncTimeout) clearTimeout(syncTimeout)
+        syncTimeout = setTimeout(() => {
+          pushStateToCloud()
+        }, 500)
+      }
     },
     { deep: true }
   )
+
+  async function signOutAgent() {
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
+    isApplyingRemoteState = true
+    currentUser.value = null
+    agentName.value = ''
+    // Réinitialise l'écran pour que l'utilisateur suivant reparte à zéro
+    watchedIds.value = []
+    watchedEpisodes.value = {}
+    ratings.value = {}
+    notes.value = {}
+    localStorage.removeItem(STORAGE_KEY)
+    showAuthModal.value = false
+    setTimeout(() => {
+      isApplyingRemoteState = false
+    }, 100)
+  }
 
   const t = computed(() => TRANSLATIONS[locale.value])
 
@@ -172,7 +301,6 @@ export const useMcuStore = defineStore('mcu', () => {
     }
     watchedEpisodes.value[projectId] = [...current]
 
-    // Si tous les épisodes sont cochés, marquer la série comme vue automatiquement
     if (totalEpisodes && current.length >= totalEpisodes && !isWatched(projectId)) {
       toggleWatched(projectId)
     }
@@ -219,6 +347,10 @@ export const useMcuStore = defineStore('mcu', () => {
     spoilerShield,
     locale,
     theme,
+    currentUser,
+    agentName,
+    isSyncing,
+    showAuthModal,
     t,
     selectedProjectId,
     selectedProject,
@@ -244,6 +376,7 @@ export const useMcuStore = defineStore('mcu', () => {
     toggleLocale,
     toggleTheme,
     openProject,
-    closeProject
+    closeProject,
+    signOutAgent
   }
 })

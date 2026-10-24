@@ -39,7 +39,7 @@ const prevProject = computed(() =>
   store.allProjects.find((p) => p.order === props.project.order - 1) || null
 )
 const nextProject = computed(() =>
-  store.allProjects.find((p) => p.order === props.order + 1) ||
+  store.allProjects.find((p) => p.order === props.project.order + 1) ||
   store.allProjects.find((p) => p.order === props.project.order + 1) || null
 )
 

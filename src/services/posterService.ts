@@ -1,7 +1,7 @@
 import type { McuProject, Locale, TmdbWikiDetails, TmdbCastMember, TmdbEpisodeInfo } from '../types/mcu'
 
 // Jeton TMDB V4 actif pré-configuré
-const TMDB_BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwM2M2ODlkNzM3MmJkMDg0ZGQ0NjI1NWNmMDJkYmQ3ZiIsIm5iZiI6MTc3MTg3NTQ5Ny40NjgsInN1YiI6IjY5OWNhY2E5N2NiNDZkNWM2NzM3NGNjZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.FHPMhmT6GHvVcHGMwErbBj1uGnPaXZmLD2ryHF_hx8w'
+const TMDB_BEARER_TOKEN = import.meta.env.VITE_TMDB_BEARER_TOKEN || ''
 
 const POSTER_CACHE_KEY = 'mcu_posters_tmdb_v4'
 const WIKI_CACHE_KEY = 'mcu_wiki_details_v3'

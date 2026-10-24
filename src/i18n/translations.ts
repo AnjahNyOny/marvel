@@ -50,7 +50,27 @@ export const TRANSLATIONS = {
       special: 'SPÉCIAL'
     },
     themeDark: 'MODE TERMINAL (SOMBRE)',
-    themeLight: 'MODE DOSSIER TVA (CLAIR)'
+    themeLight: 'MODE DOSSIER TVA (CLAIR)',
+    auth: {
+      loginBtn: 'CONNEXION AGENT',
+      syncing: 'SYNCHRO...',
+      synced: 'CLOUD ACTIF',
+      modalTitleLogin: 'IDENTIFICATION AGENT TVA',
+      modalTitleSignup: 'NOUVELLE ACCRÉDITATION TVA',
+      modalSubtitle: 'Synchronisez votre progression sur tous vos terminaux temporels.',
+      agentNameLabel: 'NOM DE CODE / PSEUDO AGENT',
+      agentNamePlaceholder: 'Ex: Agent Mobius',
+      emailLabel: 'COURRIEL TEMPOREL',
+      passwordLabel: 'CODE D’ACCÈS (6 caractères min.)',
+      submitLogin: 'OUVRIR LA SESSION',
+      submitSignup: 'CRÉER LE MATRICULE',
+      switchToSignup: 'Pas encore de matricule ? Créer un compte Agent',
+      switchToLogin: 'Déjà accrédité ? Se connecter',
+      logoutBtn: 'DÉCONNEXION (FERMER SESSION)',
+      connectedAs: 'AGENT CONNECTÉ',
+      guestNotice: 'Votre progression actuelle sur ce navigateur sera automatiquement transférée sur votre compte.',
+      notConfigured: 'Configurez vos clés SUPABASE_URL et SUPABASE_ANON_KEY dans src/services/supabaseClient.ts.'
+    }
   },
   en: {
     appTitle: 'SACRED TIMELINE',
@@ -103,6 +123,26 @@ export const TRANSLATIONS = {
       special: 'SPECIAL'
     },
     themeDark: 'TERMINAL MODE (DARK)',
-    themeLight: 'TVA DOSSIER MODE (LIGHT)'
+    themeLight: 'TVA DOSSIER MODE (LIGHT)',
+    auth: {
+      loginBtn: 'AGENT LOGIN',
+      syncing: 'SYNCING...',
+      synced: 'CLOUD SYNCED',
+      modalTitleLogin: 'TVA AGENT AUTHENTICATION',
+      modalTitleSignup: 'NEW TVA ACCREDITATION',
+      modalSubtitle: 'Synchronize your progression across all temporal terminals.',
+      agentNameLabel: 'AGENT CODENAME',
+      agentNamePlaceholder: 'e.g. Agent Mobius',
+      emailLabel: 'TEMPORAL EMAIL',
+      passwordLabel: 'ACCESS CODE (min. 6 chars)',
+      submitLogin: 'INITIALIZE SESSION',
+      submitSignup: 'REGISTER AGENT FILE',
+      switchToSignup: 'No credentials yet? Register as a new Agent',
+      switchToLogin: 'Already accredited? Sign in',
+      logoutBtn: 'SIGN OUT (CLOSE SESSION)',
+      connectedAs: 'AUTHENTICATED AGENT',
+      guestNotice: 'Your current browser progression will automatically transfer to your cloud account.',
+      notConfigured: 'Please configure SUPABASE_URL and SUPABASE_ANON_KEY in src/services/supabaseClient.ts.'
+    }
   }
 } as const

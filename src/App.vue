@@ -3,12 +3,12 @@ import { watchEffect } from 'vue'
 import { Search } from 'lucide-vue-next'
 import { useMcuStore } from './stores/useMcuStore'
 import TvaHeader from './components/TvaHeader.vue'
+import TvaAuthModal from './components/TvaAuthModal.vue'
 import McuCard from './components/McuCard.vue'
 import McuWikiPage from './components/McuWikiPage.vue'
 
 const store = useMcuStore()
 
-// Synchronise la couleur de fond du body avec le thème actif
 watchEffect(() => {
   if (typeof document !== 'undefined') {
     document.body.style.backgroundColor = store.theme === 'light' ? '#F4EFE6' : '#06080C'
@@ -23,6 +23,7 @@ watchEffect(() => {
     class="min-h-screen tva-bg-primary tva-text-main font-sans selection:bg-[#FF9F1C] selection:text-black transition-colors duration-300"
   >
     <TvaHeader />
+    <TvaAuthModal/>
 
     <main class="max-w-7xl mx-auto px-3 sm:px-6 pb-20">
       <!-- VUE 1 : PAGE WIKI DÉDIÉE SI UN FILM EST SÉLECTIONNÉ -->

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMcuStore } from '../stores/useMcuStore'
-import { Shield, ShieldAlert, Activity, Clock, Target, Sun, Moon, Globe } from 'lucide-vue-next'
+import { Shield, ShieldAlert, Activity, Clock, Target, Sun, Moon, Globe, UserCheck, User } from 'lucide-vue-next'
 
 const store = useMcuStore()
 </script>
@@ -23,8 +23,18 @@ const store = useMcuStore()
           </div>
         </div>
 
-        <!-- Boutons rapides Mobile (Langue & Thème) -->
+        <!-- Boutons rapides Mobile -->
         <div class="flex xl:hidden items-center gap-2">
+          <button
+            @click="store.showAuthModal = true"
+            class="px-2.5 py-2 rounded border font-mono-tech text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+            :class="store.currentUser ? 'border-[#00D67D] text-[#00D67D] bg-[#00D67D]/10' : 'tva-border tva-bg-card tva-text-main hover:border-[#FF9F1C]'"
+          >
+            <UserCheck v-if="store.currentUser" class="w-3.5 h-3.5" />
+            <User v-else class="w-3.5 h-3.5 text-[#FF9F1C]" />
+            <span class="max-w-[80px] truncate">{{ store.currentUser ? store.agentName : 'AGENT' }}</span>
+          </button>
+
           <button
             @click="store.toggleLocale()"
             class="px-2.5 py-2 rounded border tva-border tva-bg-card font-mono-tech text-xs font-bold tva-text-main hover:border-[#FF9F1C] transition-colors flex items-center gap-1"
@@ -35,7 +45,6 @@ const store = useMcuStore()
           <button
             @click="store.toggleTheme()"
             class="p-2 rounded border tva-border tva-bg-card tva-text-main hover:border-[#FF9F1C] transition-colors"
-            :title="store.theme === 'dark' ? store.t.themeLight : store.t.themeDark"
           >
             <Sun v-if="store.theme === 'dark'" class="w-4 h-4 text-[#FF9F1C]" />
             <Moon v-else class="w-4 h-4 text-[#FF9F1C]" />
@@ -46,7 +55,7 @@ const store = useMcuStore()
       <!-- Statistiques & Contrôles -->
       <div class="flex flex-wrap justify-center items-center gap-2.5 sm:gap-3 text-xs font-mono-tech w-full xl:w-auto">
         
-        <div class="flex-1 sm:flex-initial flex flex-col items-center border tva-border tva-bg-inset p-2.5 rounded min-w-[130px]">
+        <div class="flex-1 sm:flex-initial flex flex-col items-center border tva-border tva-bg-inset p-2.5 rounded min-w-[125px]">
           <span class="tva-text-muted flex items-center gap-1">
             <Clock class="w-3 h-3" /> {{ store.t.requiredPace }}
           </span>
@@ -55,7 +64,7 @@ const store = useMcuStore()
           </span>
         </div>
 
-        <div class="flex-1 sm:flex-initial flex flex-col items-center border tva-border tva-bg-inset p-2.5 rounded min-w-[130px]">
+        <div class="flex-1 sm:flex-initial flex flex-col items-center border tva-border tva-bg-inset p-2.5 rounded min-w-[125px]">
           <span class="tva-text-muted flex items-center gap-1">
             <Target class="w-3 h-3" /> {{ store.t.progression }}
           </span>
@@ -74,12 +83,25 @@ const store = useMcuStore()
           <span>{{ store.t.spoilerShield }} : {{ store.spoilerShield ? store.t.active : store.t.inactive }}</span>
         </button>
 
-        <!-- Boutons Desktop (Langue & Thème) -->
+        <!-- Boutons Desktop (Connexion Agent, Langue & Thème) -->
         <div class="hidden xl:flex items-center gap-2">
+          <button
+            @click="store.showAuthModal = true"
+            class="px-3.5 py-3 rounded border font-mono-tech text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
+            :class="
+              store.currentUser
+                ? 'border-[#00D67D] text-[#00D67D] bg-[#00D67D]/10 hover:bg-[#00D67D]/20'
+                : 'tva-border tva-bg-inset tva-text-main hover:border-[#FF9F1C]'
+            "
+          >
+            <UserCheck v-if="store.currentUser" class="w-4 h-4 text-[#00D67D]" />
+            <User v-else class="w-4 h-4 text-[#FF9F1C]" />
+            <span>{{ store.currentUser ? store.agentName : store.t.auth.loginBtn }}</span>
+          </button>
+
           <button
             @click="store.toggleLocale()"
             class="px-3 py-3 rounded border tva-border tva-bg-inset font-mono-tech text-xs font-bold tva-text-main hover:border-[#FF9F1C] transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Switch Language (FR / EN)"
           >
             <Globe class="w-4 h-4 text-[#FF9F1C]" />
             {{ store.locale.toUpperCase() }}
@@ -88,7 +110,6 @@ const store = useMcuStore()
           <button
             @click="store.toggleTheme()"
             class="p-3 rounded border tva-border tva-bg-inset tva-text-main hover:border-[#FF9F1C] transition-colors cursor-pointer"
-            :title="store.theme === 'dark' ? store.t.themeLight : store.t.themeDark"
           >
             <Sun v-if="store.theme === 'dark'" class="w-4 h-4 text-[#FF9F1C]" />
             <Moon v-else class="w-4 h-4 text-[#FF9F1C]" />
